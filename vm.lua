@@ -72,7 +72,7 @@ local SYSCALLS = {
         fh:close()
     end,
     [0x04] = function(vm) --- SYS_TIME
-        vm.stack:push(os.epoch("utc"))
+        vm.stack:push(os.epoch and os.epoch("utc") or os.time())
     end,
 }
 
