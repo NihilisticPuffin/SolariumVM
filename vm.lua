@@ -1,3 +1,13 @@
+--- [ bit32 Lib ] --------------------------------------------------------------
+local bit32 = bit32 or {
+    bor = load("return function(a, b) return a | b end")(),
+    band = load("return function(a, b) return a & b end")(),
+    bxor = load("return function(a, b) return a ~ b end")(),
+    bnot = load("return function(a) return ~a end")(),
+    lshift = load("return function(a, b) return a << b end")(),
+    rshift = load("return function(a, b) return a >> b end")(),
+}
+
 --- [ Imports ] ----------------------------------------------------------------
 local OPCODES = require "OpCodes"
 
@@ -50,7 +60,7 @@ local SYSCALLS = {
     [0x01] = function(vm) --- SYS_OPEN
         local modes = { "r", "w", "a" }
         local mode = vm.stack:pop()
-        local fh = io.open(vm.stack:pop(), modes[bit32.band(mode, 0x0F)] .. (bit32.band(mode, 0x10) and '+' or ''))
+        local fh = io.open(vm.stack:pop(), modes[bit32.band(mode, 0x0F)] .. ((bit32.band(mode, 0x10) == 1) and '+' or ''))
         vm.stack:push(fh)
     end,
     [0x02] = function(vm) --- SYS_READ
