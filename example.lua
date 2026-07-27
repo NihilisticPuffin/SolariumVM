@@ -12,7 +12,7 @@ local Fibonacci = {
         0x01, 0x01,       --- CONSTANT 1
         0x01, 0x02,       --- CONSTANT 2
         0x1F, 0x00,       --- CALL 0
-        0x21, 0x00,
+        0xFE, 0x00,       --- SYSCALL SYS_PRINT
         0xFF,             --- HALT
 
         0x08, 0x00,       --- GET_LOCAL 0
@@ -52,14 +52,14 @@ local LCG = { --- LCG PRNG
     },
     bytecode = {
         0x01, 0x00, --- CONSTANT 0
-    --- 0x21, 0x04, --- SYSCALL SYS_TIME (Replace CONSTANT 0 to use unix epoch as seed)
+    --- 0xFE, 0x04, --- SYSCALL SYS_TIME (Replace CONSTANT 0 to use unix epoch as seed)
         0x07, 0x00, --- SET_GLOBAL 0
         0x1F, 0x00, --- CALL 0
-        0x21, 0x00, --- SYSCALL SYS_PRINT
+        0xFE, 0x00, --- SYSCALL SYS_PRINT
         0x1F, 0x00, --- CALL 0
-        0x21, 0x00, --- SYSCALL SYS_PRINT
+        0xFE, 0x00, --- SYSCALL SYS_PRINT
         0x1F, 0x00, --- CALL 0
-        0x21, 0x00, --- SYSCALL SYS_PRINT
+        0xFE, 0x00, --- SYSCALL SYS_PRINT
         0xFF,       --- HALT
         0x06, 0x00, --- GET_GLOBAL 0
         0x01, 0x01, --- CONSTANT 1
@@ -79,15 +79,15 @@ local FileIO = {
     bytecode = {
         0x01, 0x00, --- CONSTANT 0
         0x01, 0x01, --- CONSTANT 1
-        0x21, 0x01, --- SYSCALL SYS_OPEN
+        0xFE, 0x01, --- SYSCALL SYS_OPEN
         0x04,       --- DUP
         0x07, 0x00, --- SET_GLOBAL 0
 
-        0x21, 0x02, --- SYSCALL SYS_READ
+        0xFE, 0x02, --- SYSCALL SYS_READ
 
         0x06, 0x00, --- GET_GLOBAL 0
-        0x21, 0x03, --- SYSCALL SYS_CLOSE
-        0x21, 0x00, --- SYSCALL SYS_PRINT
+        0xFE, 0x03, --- SYSCALL SYS_CLOSE
+        0xFE, 0x00, --- SYSCALL SYS_PRINT
         0xFF        --- HALT
     }
 }

@@ -45,7 +45,12 @@ return {
     CALL         = 0x1F,
     RETURN       = 0x20,
     
+    --- [ Memory & Indexing ]
+    GET_INDEX    = 0x21,
+    SET_INDEX    = 0x22,
+    ARRAY    = 0x23,
+
     --- [ System ]
-    SYSCALL       = 0x21,
+    SYSCALL       = 0xFE,
     HALT         = 0xFF,
 }

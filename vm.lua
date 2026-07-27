@@ -6,6 +6,10 @@ local bit32 = bit32 or {
     bnot = load("return function(a) return ~a end")(),
     lshift = load("return function(a, b) return a << b end")(),
     rshift = load("return function(a, b) return a >> b end")(),
+    lrotate = load([[return function(a, b)
+                                b = b % 32
+                                return ((a << b) | (a >> (32 - b))) & 0xFFFFFFFF
+                            end]])()
 }
 
 --- [ Imports ] ----------------------------------------------------------------
@@ -78,6 +82,9 @@ local SYSCALLS = {
     [0x05] = function(vm) --- SYS_EXIT
         vm.exit_code = vm.stack:push()
         vm.running = false
+    end,
+    [0x06] = function(vm) --- SYS_READ
+        vm.stack:push(io.stdin:read())
     end,
 }
 
@@ -282,6 +289,65 @@ handlers[OPCODES.RETURN] = function(self)
     while self.stack:size() > frame.base_pointer do self.stack:pop() end
     self.stack:push(value)
     self.ip = frame.return_ip
+end
+
+handlers[OPCODES.GET_INDEX] = function(self)
+    local index = self.stack:pop()
+    local target = self.stack:pop()
+
+    if type(index) ~= "number" then
+        errorf("Attempted to index with a non-numeric value of type '%s' at IP: %d", type(index), self.ip - 1)
+    end
+
+    if type(target) == "string" then
+        local char = string.sub(target, index + 1, index + 1)
+        self.stack:push(char)
+    elseif type(target) == "table" then
+        self.stack:push(target[index + 1])
+    else
+        errorf("Attempted to index a non-indexable value of type '%s' at IP: %d", type(target), self.ip - 1)
+    end
+end
+
+handlers[OPCODES.SET_INDEX] = function(self)
+    local value = self.stack:pop()
+    local index = self.stack:pop()
+    local target = self.stack:pop()
+
+    if type(index) ~= "number" then
+        errorf("Attempted to set index with a non-numeric value of type '%s' at IP: %d", type(index), self.ip - 1)
+    end
+
+    if type(target) == "string" then
+        if type(value) ~= "string" then
+            errorf("Attempted to set string index with a non-string value of type '%s' at IP: %d", type(val), self.ip - 1)
+        end
+        if #value ~= 1 then
+            errorf("Attempted to set index with a string of length %d (must be exactly 1 character) at IP: %d", #val, self.ip - 1)
+        end
+
+        self.stack:push(target:sub(1, index - 1) .. value .. target:sub(index + 1))
+    elseif type(target) == "table" then
+        target[index + 1] = value
+        self.stack:push(value)
+    else
+        errorf("Attempted to set index on a non-indexable value of type '%s' at IP: %d", type(target), self.ip - 1)
+    end
+end
+handlers[OPCODES.ARRAY] = function(self)
+    local length = self:read8()
+    local array = {}
+
+    if self.stack:size() < length then
+        errorf("Array length %d exceeds stack size %d at IP: %d",
+            length, self.stack:size(), self.ip - 2)
+    end
+    
+    for i = length, 1, -1 do
+        array[i] = self.stack:pop()
+    end
+    
+    self.stack:push(arr)
 end
 
 handlers[OPCODES.SYSCALL] = function(self)
