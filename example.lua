@@ -91,6 +91,30 @@ local FileIO = {
         0xFF        --- HALT
     }
 }
+local Assert = { --- assert(const_pool[0] == const_pool[1])
+    const_pool = {0, 1, "Assert Failed", "Passed"},
+    func_table = {
+        {address = 14, argc = 2}
+    },
+    bytecode = {
+        0x01, 0x00,
+        0x01, 0x01,
+        0x18,
+        0x01, 0x02,
+        0x1F, 0x00,
+        0x01, 0x03,
+        0xFE, 0x00,
+        0xFF,
+        
+        0x08, 0x00,
+        0x1D, 0x00, 0x06,
+        0xFE, 0x00,
+        0x01, 0x01,
+        0xFE, 0x05,
+        0x20
+    }
+}
+
 local vm = VM.new()
 print("=== Fibonacci ===")
 vm:load(Fibonacci):run()
@@ -98,3 +122,6 @@ print("=== LCG PRNG ===")
 vm:reset():load(LCG):run()
 print("=== File I/O ===")
 vm:reset():load(FileIO):run()
+
+print("=== Assert ===")
+vm:reset():load(Assert):run()
