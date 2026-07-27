@@ -19,9 +19,10 @@ local function errorf(fmt, ...) error(string.format(fmt, ...), 0) end
 --- [ Stack ] ------------------------------------------------------------------
 local Stack = {}
 Stack.__index = Stack
-function Stack.new()
+function Stack.new(vm)
     local self = {
-        _data = {}
+        _data = {},
+        vm = vm
     }
     return setmetatable(self, Stack)
 end
@@ -31,7 +32,7 @@ function Stack:push(value)
 end
 function Stack:pop()
     if self:isEmpty() then
-        return nil, "Stack underflow"
+        errorf("Stack underflow at IP: %d", self.vm.ip - 1)
     end
     return table.remove(self._data)
 end
@@ -74,6 +75,10 @@ local SYSCALLS = {
     [0x04] = function(vm) --- SYS_TIME
         vm.stack:push(os.epoch and os.epoch("utc") or os.time())
     end,
+    [0x05] = function(vm) --- SYS_EXIT
+        vm.exit_code = vm.stack:push()
+        vm.running = false
+    end,
 }
 
 --- [ Initialization ] ---------------------------------------------------------
@@ -86,19 +91,22 @@ function VM.new()
         ip = 0,
         bytecode = {},
         running = false,
+        exit_code = 0,
 
         --- [ Memory & Storage ]
-        stack = Stack.new(),
+        stack = nil,
         globals = {},
         const_pool = {},
 
         --- [ Subroutines & Call Stack ]
         func_table = {},
-        frames = Stack.new(),
+        frames = nil,
 
         --- [ Syscalls ]
         syscalls = SYSCALLS
     }, VM)
+    self.stack = Stack.new(self)
+    self.frames = Stack.new(self)
     return self
 end
 
