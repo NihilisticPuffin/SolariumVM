@@ -80,7 +80,7 @@ local SYSCALLS = {
         vm.stack:push(os.epoch and os.epoch("utc") or os.time())
     end,
     [0x05] = function(vm) --- SYS_EXIT
-        vm.exit_code = vm.stack:push()
+        vm.exit_code = vm.stack:pop()
         vm.running = false
     end,
     [0x06] = function(vm) --- SYS_READ
