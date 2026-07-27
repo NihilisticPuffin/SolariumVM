@@ -251,6 +251,14 @@ handlers[OPCODES.JMP] = function(self)
     local offset = self:read16()
     self.ip = self.ip + offset
 end
+handlers[OPCODES.JZ] = function(self)
+    local offset = self:read16()
+    local condition = self.stack:pop()
+    
+    if condition == nil or condition == 0 or condition == NULL then
+        self.ip = self.ip + offset
+    end
+end
 handlers[OPCODES.JNZ] = function(self)
     local offset = self:read16()
     local condition = self.stack:pop()
