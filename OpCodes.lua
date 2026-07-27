@@ -9,48 +9,49 @@ return {
     SWAP         = 0x05,
     
     --- [ Variables & Scoping ]
-    GET_GLOBAL   = 0x06,
-    SET_GLOBAL   = 0x07,
-    GET_LOCAL    = 0x08,
-    SET_LOCAL    = 0x09,
+    GET_GLOBAL   = 0x10,
+    SET_GLOBAL   = 0x11,
+    GET_LOCAL    = 0x12,
+    SET_LOCAL    = 0x13,
 
     --- [ Arithmetic Operations ]
-    ADD          = 0x0A,
-    SUB          = 0x0B,
-    MUL          = 0x0C,
-    DIV          = 0x0D,
-    MOD          = 0x0E,
-    POW          = 0x0F,
-    INC          = 0x10,
-    DEC          = 0x11,
-    NEGATE       = 0x12,
+    ADD          = 0x20,
+    SUB          = 0x21,
+    MUL          = 0x22,
+    DIV          = 0x23,
+    MOD          = 0x24,
+    POW          = 0x25,
+    INC          = 0x26,
+    DEC          = 0x27,
+    NEGATE       = 0x28,
 
     --- [ Bitwise Operations ]
-    LSHIFT       = 0x13,
-    RSHIFT       = 0x14,
-    AND          = 0x15,
-    OR           = 0x16,
-    XOR          = 0x17,
+    LSHIFT       = 0x30,
+    RSHIFT       = 0x31,
+    AND          = 0x32,
+    OR           = 0x33,
+    XOR          = 0x34,
 
     --- [ Comparison & Logical ]
-    EQUAL        = 0x18,
-    GREATER      = 0x19,
-    LESS         = 0x1A,
-    NOT          = 0x1B,
+    EQUAL        = 0x40,
+    GREATER      = 0x41,
+    LESS         = 0x42,
+    NOT          = 0x43,
 
     --- [ Jumps & Flow Control ]
-    JMP          = 0x1C,
-    JNZ          = 0x1D,
-    LOOP         = 0x1E,
-    CALL         = 0x1F,
-    RETURN       = 0x20,
+    JMP          = 0x50,
+    JZ           = 0x51,
+    JNZ          = 0x52,
+    LOOP         = 0x53,
+    CALL         = 0x54,
+    RETURN       = 0x55,
     
     --- [ Memory & Indexing ]
-    GET_INDEX    = 0x21,
-    SET_INDEX    = 0x22,
-    ARRAY    = 0x23,
+    GET_INDEX    = 0x60,
+    SET_INDEX    = 0x61,
+    ARRAY        = 0x62,
 
     --- [ System ]
-    SYSCALL       = 0xFE,
+    SYSCALL      = 0xFE,
     HALT         = 0xFF,
 }

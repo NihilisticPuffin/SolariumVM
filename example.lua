@@ -11,32 +11,32 @@ local Fibonacci = {
         0x01, 0x00,       --- CONSTANT 0
         0x01, 0x01,       --- CONSTANT 1
         0x01, 0x02,       --- CONSTANT 2
-        0x1F, 0x00,       --- CALL 0
+        0x54, 0x00,       --- CALL 0
         0xFE, 0x00,       --- SYSCALL SYS_PRINT
         0xFF,             --- HALT
 
-        0x08, 0x00,       --- GET_LOCAL 0
+        0x12, 0x00,       --- GET_LOCAL 0
         0x01, 0x02,       --- CONSTANT 2
-        0x19, 0x1B,       --- GREATER NOT (Same as <=)
-        0x1D, 0x00, 0x14, --- JNZ return_b
+        0x41, 0x43,       --- GREATER NOT (Same as <=)
+        0x52, 0x00, 0x14, --- JNZ return_b
 
-        0x08, 0x00,       --- GET_LOCAL 0
+        0x12, 0x00,       --- GET_LOCAL 0
         0x01, 0x02,       --- CONSTANT 2
-        0x0B,             --- SUB
-        0x09, 0x00,       --- SET_LOCAL 0
+        0x21,             --- SUB
+        0x13, 0x00,       --- SET_LOCAL 0
 
-        0x08, 0x02,       --- GET_LOCAL 2
-        0x08, 0x01,       --- GET_LOCAL 1
-        0x08, 0x02,       --- GET_LOCAL 2
-        0x0A,             --- ADD
-        0x09, 0x02,       --- SET_LOCAL 2
-        0x09, 0x01,       --- SET_LOCAL 1
+        0x12, 0x02,       --- GET_LOCAL 2
+        0x12, 0x01,       --- GET_LOCAL 1
+        0x12, 0x02,       --- GET_LOCAL 2
+        0x20,             --- ADD
+        0x13, 0x02,       --- SET_LOCAL 2
+        0x13, 0x01,       --- SET_LOCAL 1
 
-        0x1F, 0x00,       --- CALL 0
-        0x20,             --- RETURN
+        0x54, 0x00,       --- CALL 0
+        0x55,             --- RETURN
 --- return_b:
-        0x08, 0x02,       --- GET_LOCAL 2
-        0x20              --- RETURN
+        0x12, 0x02,       --- GET_LOCAL 2
+        0x55              --- RETURN
     },
 }
 
@@ -53,24 +53,24 @@ local LCG = { --- LCG PRNG
     bytecode = {
         0x01, 0x00, --- CONSTANT 0
     --- 0xFE, 0x04, --- SYSCALL SYS_TIME (Replace CONSTANT 0 to use unix epoch as seed)
-        0x07, 0x00, --- SET_GLOBAL 0
-        0x1F, 0x00, --- CALL 0
+        0x11, 0x00, --- SET_GLOBAL 0
+        0x54, 0x00, --- CALL 0
         0xFE, 0x00, --- SYSCALL SYS_PRINT
-        0x1F, 0x00, --- CALL 0
+        0x54, 0x00, --- CALL 0
         0xFE, 0x00, --- SYSCALL SYS_PRINT
-        0x1F, 0x00, --- CALL 0
+        0x54, 0x00, --- CALL 0
         0xFE, 0x00, --- SYSCALL SYS_PRINT
         0xFF,       --- HALT
-        0x06, 0x00, --- GET_GLOBAL 0
+        0x10, 0x00, --- GET_GLOBAL 0
         0x01, 0x01, --- CONSTANT 1
-        0x0C,       --- MULT
+        0x22,       --- MULT
         0x01, 0x02, --- CONSTANT 2
-        0x0A,       --- ADD
+        0x20,       --- ADD
         0x01, 0x03, --- CONSTANT 3
-        0x0E,       --- MOD
+        0x24,       --- MOD
         0x04,       --- DUP
-        0x07, 0x00, --- SET_GLOBAL 0
-        0x20,       --- RETURN
+        0x11, 0x00, --- SET_GLOBAL 0
+        0x55,       --- RETURN
     }
 }
 
@@ -81,11 +81,11 @@ local FileIO = {
         0x01, 0x01, --- CONSTANT 1
         0xFE, 0x01, --- SYSCALL SYS_OPEN
         0x04,       --- DUP
-        0x07, 0x00, --- SET_GLOBAL 0
+        0x11, 0x00, --- SET_GLOBAL 0
 
         0xFE, 0x02, --- SYSCALL SYS_READ
 
-        0x06, 0x00, --- GET_GLOBAL 0
+        0x10, 0x00, --- GET_GLOBAL 0
         0xFE, 0x03, --- SYSCALL SYS_CLOSE
         0xFE, 0x00, --- SYSCALL SYS_PRINT
         0xFF        --- HALT
@@ -99,19 +99,19 @@ local Assert = { --- assert(const_pool[0] == const_pool[1])
     bytecode = {
         0x01, 0x00,
         0x01, 0x01,
-        0x18,
+        0x40,
         0x01, 0x02,
-        0x1F, 0x00,
+        0x54, 0x00,
         0x01, 0x03,
         0xFE, 0x00,
         0xFF,
         
-        0x08, 0x00,
-        0x1D, 0x00, 0x06,
+        0x12, 0x00,
+        0x52, 0x00, 0x06,
         0xFE, 0x00,
         0x01, 0x01,
         0xFE, 0x05,
-        0x20
+        0x55
     }
 }
 
