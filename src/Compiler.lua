@@ -148,6 +148,20 @@ function Compiler:compile_expr(node)
             errorf("Unsupported callee") --- TODO: Better error message
         end
         local target_name = node.callee.name
+
+        if target_name == "print" then
+            if #node.args ~= 1 then
+                errorf("print expects 1 argument, got %d", #node.args)
+            end
+            self:emit8(OPCODES.SYSCALL)
+            self:emit8(0x00)
+            return
+        elseif target_name == "read" then
+            self:emit8(OPCODES.SYSCALL)
+            self:emit8(0x01)
+            return
+        end
+
         local func_id = nil
         for id, func in ipairs(self.func_table) do
             if func.name == target_name then
@@ -244,7 +258,7 @@ function Compiler:compile()
     self:push_scope()
     self:compile_stmt(main_func.body)
     if self.bytecode[#self.bytecode] == OPCODES.RETURN then
-        self.bytecode[#self.bytecode] = OPCODES.SYSCALL self:emit8(0x05)
+        self.bytecode[#self.bytecode] = OPCODES.SYSCALL self:emit8(0x06)
     end
     self:emit8(OPCODES.HALT)
     self:pop_scope()

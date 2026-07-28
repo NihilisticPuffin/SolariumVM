@@ -49,29 +49,29 @@ local SYSCALLS = {
     [0x00] = function(vm) --- SYS_PRINT
         print(vm.stack:pop())
     end,
-    [0x01] = function(vm) --- SYS_OPEN
+    [0x01] = function(vm) --- SYS_READ
+        vm.stack:push(io.stdin:read())
+    end,
+    [0x02] = function(vm) --- SYS_FOPEN
         local modes = { "r", "w", "a" }
         local mode = vm.stack:pop()
         local fh = io.open(vm.stack:pop(), modes[bit32.band(mode, 0x0F)] .. ((bit32.band(mode, 0x10) == 1) and '+' or ''))
         vm.stack:push(fh)
     end,
-    [0x02] = function(vm) --- SYS_READ
+    [0x03] = function(vm) --- SYS_FREAD
         local fh = vm.stack:pop()
         vm.stack:push(fh:read("*a"))
     end,
-    [0x03] = function(vm) --- SYS_CLOSE
+    [0x04] = function(vm) --- SYS_FCLOSE
         local fh = vm.stack:pop()
         fh:close()
     end,
-    [0x04] = function(vm) --- SYS_TIME
+    [0x05] = function(vm) --- SYS_TIME
         vm.stack:push(os.epoch and os.epoch("utc") or os.time())
     end,
-    [0x05] = function(vm) --- SYS_EXIT
+    [0x06] = function(vm) --- SYS_EXIT
         vm.exit_code = vm.stack:pop()
         vm.running = false
-    end,
-    [0x06] = function(vm) --- SYS_READ
-        vm.stack:push(io.stdin:read())
     end,
 }
 

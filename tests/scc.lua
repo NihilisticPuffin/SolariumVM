@@ -10,7 +10,8 @@ local source = [[
         return fib(n-1, b, a+b);
     }
     fn main() {
-       return fib(20, 0, 1);
+       print(fib(20, 0, 1));
+       return 0;
     }
 ]]
 
@@ -20,5 +21,4 @@ local ast = Parser.new(tokens, source):parse()
 local program = Compiler.new(ast):compile()
 
 local vm = VM.new():load(program):run()
-print(vm.exit_code)
-
+os.exit(vm.exit_code)
