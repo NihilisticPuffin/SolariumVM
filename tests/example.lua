@@ -1,4 +1,5 @@
-local VM = require "vm"
+package.path = package.path .. ';src/?.lua'
+local VM = require "VM"
 
 local Fibonacci = {
     const_pool = {
@@ -75,7 +76,7 @@ local LCG = { --- LCG PRNG
 }
 
 local FileIO = {
-    const_pool = {"test.txt", 1},
+    const_pool = {"tests/test.txt", 1},
     bytecode = {
         0x01, 0x00, --- CONSTANT 0
         0x01, 0x01, --- CONSTANT 1

@@ -1,18 +1,5 @@
---- [ bit32 Lib ] --------------------------------------------------------------
-local bit32 = bit32 or {
-    bor = load("return function(a, b) return a | b end")(),
-    band = load("return function(a, b) return a & b end")(),
-    bxor = load("return function(a, b) return a ~ b end")(),
-    bnot = load("return function(a) return ~a end")(),
-    lshift = load("return function(a, b) return a << b end")(),
-    rshift = load("return function(a, b) return a >> b end")(),
-    lrotate = load([[return function(a, b)
-                                b = b % 32
-                                return ((a << b) | (a >> (32 - b))) & 0xFFFFFFFF
-                            end]])()
-}
-
 --- [ Imports ] ----------------------------------------------------------------
+local bit32 = require "bit32"
 local OPCODES = require "OpCodes"
 
 --- [ Helpers ] ----------------------------------------------------------------
@@ -254,7 +241,7 @@ end
 handlers[OPCODES.JZ] = function(self)
     local offset = self:read16()
     local condition = self.stack:pop()
-    
+
     if condition == nil or condition == 0 or condition == NULL then
         self.ip = self.ip + offset
     end
@@ -262,7 +249,7 @@ end
 handlers[OPCODES.JNZ] = function(self)
     local offset = self:read16()
     local condition = self.stack:pop()
-    
+
     if condition ~= nil and condition ~= 0 and condition ~= NULL then
         self.ip = self.ip + offset
     end
@@ -275,11 +262,11 @@ end
 handlers[OPCODES.CALL] = function(self)
     local func_id = self:read8()
     local func = self.func_table[func_id + 1]
-    
+
     if not func then
         errorf("Function not found for ID: %d at IP: %d", func_id, self.ip - 2)
     end
-    
+
     local base_pointer = self.stack:size() - func.argc
 
     self.frames:push({ return_ip = self.ip, base_pointer = base_pointer, func_id = func_id })
@@ -328,10 +315,10 @@ handlers[OPCODES.SET_INDEX] = function(self)
 
     if type(target) == "string" then
         if type(value) ~= "string" then
-            errorf("Attempted to set string index with a non-string value of type '%s' at IP: %d", type(val), self.ip - 1)
+            errorf("Attempted to set string index with a non-string value of type '%s' at IP: %d", type(value), self.ip - 1)
         end
         if #value ~= 1 then
-            errorf("Attempted to set index with a string of length %d (must be exactly 1 character) at IP: %d", #val, self.ip - 1)
+            errorf("Attempted to set index with a string of length %d (must be exactly 1 character) at IP: %d", #value, self.ip - 1)
         end
 
         self.stack:push(target:sub(1, index - 1) .. value .. target:sub(index + 1))
@@ -350,12 +337,12 @@ handlers[OPCODES.ARRAY] = function(self)
         errorf("Array length %d exceeds stack size %d at IP: %d",
             length, self.stack:size(), self.ip - 2)
     end
-    
+
     for i = length, 1, -1 do
         array[i] = self.stack:pop()
     end
-    
-    self.stack:push(arr)
+
+    self.stack:push(array)
 end
 
 handlers[OPCODES.SYSCALL] = function(self)
@@ -385,7 +372,7 @@ function VM:step()
 
     local op = self:read8()
     local handler = handlers[op]
-    
+
     if handler then
         handler(self)
     else
