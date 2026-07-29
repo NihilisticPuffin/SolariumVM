@@ -1,6 +1,7 @@
 --- [ Imports ] ----------------------------------------------------------------
 local bit32 = require "bit32"
 local OPCODES = require "OpCodes"
+local SysCalls = require "SysCalls"
 
 --- [ Utility ] ----------------------------------------------------------------
 local function errorf(fmt, ...) error(string.format(fmt, ...), 0) end
@@ -149,16 +150,13 @@ function Compiler:compile_expr(node)
         end
         local target_name = node.callee.name
 
-        if target_name == "print" then
-            if #node.args ~= 1 then
-                errorf("print expects 1 argument, got %d", #node.args)
+        local syscall = SysCalls.calls[target_name]
+        if syscall then
+            if syscall.argc and #node.args ~= syscall.argc then
+                errorf("%s expects %d argument(s), got %d", target_name, syscall.argc, #node.args)
             end
             self:emit8(OPCODES.SYSCALL)
-            self:emit8(0x00)
-            return
-        elseif target_name == "read" then
-            self:emit8(OPCODES.SYSCALL)
-            self:emit8(0x01)
+            self:emit8(syscall.id)
             return
         end
 

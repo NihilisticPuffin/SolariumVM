@@ -1,6 +1,7 @@
 --- [ Imports ] ----------------------------------------------------------------
 local bit32 = require "bit32"
 local OPCODES = require "OpCodes"
+local SYSCALLS = require "SysCalls"
 
 --- [ Helpers ] ----------------------------------------------------------------
 local function bool(v) return v and 1 or 0 end
@@ -43,37 +44,6 @@ end
 function Stack:size()
     return #self._data
 end
-
---- [ Sys Calls ] --------------------------------------------------------------
-local SYSCALLS = {
-    [0x00] = function(vm) --- SYS_PRINT
-        print(vm.stack:pop())
-    end,
-    [0x01] = function(vm) --- SYS_READ
-        vm.stack:push(io.stdin:read())
-    end,
-    [0x02] = function(vm) --- SYS_FOPEN
-        local modes = { "r", "w", "a" }
-        local mode = vm.stack:pop()
-        local fh = io.open(vm.stack:pop(), modes[bit32.band(mode, 0x0F)] .. ((bit32.band(mode, 0x10) == 1) and '+' or ''))
-        vm.stack:push(fh)
-    end,
-    [0x03] = function(vm) --- SYS_FREAD
-        local fh = vm.stack:pop()
-        vm.stack:push(fh:read("*a"))
-    end,
-    [0x04] = function(vm) --- SYS_FCLOSE
-        local fh = vm.stack:pop()
-        fh:close()
-    end,
-    [0x05] = function(vm) --- SYS_TIME
-        vm.stack:push(os.epoch and os.epoch("utc") or os.time())
-    end,
-    [0x06] = function(vm) --- SYS_EXIT
-        vm.exit_code = vm.stack:pop()
-        vm.running = false
-    end,
-}
 
 --- [ Initialization ] ---------------------------------------------------------
 local VM = {}
@@ -192,11 +162,9 @@ end
 handlers[OPCODES.GET_LOCAL] = function(self)
     local index = self:read8()
     local frame = self.frames:peek()
-    if not frame then
-        errorf("No active call frame for GET_LOCAL at IP: %d", self.ip - 2)
-    end
-    local offset = frame.base_pointer + index + 1
-    if offset <= frame.base_pointer or offset > self.stack:size() then
+    local base_pointer = frame and frame.base_pointer or 0
+    local offset = base_pointer + index + 1
+    if offset <= base_pointer or offset > self.stack:size() then
         errorf("Local index out of bounds: %d (offset %d) at IP: %d", index, offset, self.ip - 2)
     end
 
@@ -205,11 +173,9 @@ end
 handlers[OPCODES.SET_LOCAL] = function(self)
     local index = self:read8()
     local frame = self.frames:peek()
-    if not frame then
-        errorf("No active call frame for GET_LOCAL at IP: %d", self.ip - 2)
-    end
-    local offset = frame.base_pointer + index + 1
-    if offset <= frame.base_pointer or offset > self.stack:size() then
+    local base_pointer = frame and frame.base_pointer or 0
+    local offset = base_pointer + index + 1
+    if offset <= base_pointer or offset > self.stack:size() then
         errorf("Local index out of bounds: %d (offset %d) at IP: %d", index, offset, self.ip - 2)
     end
 
@@ -347,7 +313,7 @@ end
 
 handlers[OPCODES.SYSCALL] = function(self)
     local sys_id = self:read8()
-    local sys_handler = self.syscalls[sys_id]
+    local sys_handler = self.syscalls.handlers[sys_id]
     if not sys_handler then
         errorf("Unknown or unhandled syscall ID: 0x%02X at IP: %d", sys_id, self.ip - 1)
     end
