@@ -23,7 +23,6 @@ local SysCalls = {
         id = 0x02,
         argc = 2,
         handler = function(vm)
-            local modes = { "r", "w", "a" }
             local mode = vm.stack:pop()
             local fh = io.open(vm.stack:pop(), mode)
             vm.stack:push(fh)
@@ -87,6 +86,7 @@ local SysCalls = {
         handler = function(vm)
             local fh = vm.stack:pop()
             fh:close()
+            vm.stack:push(0)
         end
     },
     {

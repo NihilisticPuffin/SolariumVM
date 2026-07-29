@@ -183,7 +183,7 @@ handlers[OPCODES.SET_LOCAL] = function(self)
         errorf("Local index out of bounds: %d (offset %d) at IP: %d", index, offset, self.ip - 2)
     end
 
-    self.stack._data[offset] = self.stack:pop()
+    self.stack._data[offset] = self.stack:peek()
 end
 
 handlers[OPCODES.INC] = function(self)

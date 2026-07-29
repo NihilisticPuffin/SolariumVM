@@ -238,6 +238,7 @@ function Compiler:compile_stmt(node)
         end
     elseif node.type == "ExprStmt" then
         self:compile_expr(node.expr)
+        self:emit8(OPCODES.POP)
     end
 end
 function Compiler:compile()
@@ -263,7 +264,7 @@ function Compiler:compile()
     self:push_scope()
     self:compile_stmt(main_func.body)
     if self.bytecode[#self.bytecode] == OPCODES.RETURN then
-        self.bytecode[#self.bytecode] = OPCODES.SYSCALL self:emit8(0x06)
+        self.bytecode[#self.bytecode] = OPCODES.SYSCALL self:emit8(0x00)
     end
     self:emit8(OPCODES.HALT)
     self:pop_scope()

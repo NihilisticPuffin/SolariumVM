@@ -5,14 +5,15 @@ local Compiler = require "Compiler"
 local VM = require "VM"
 
 local source = [[
+    fn fsize(path) {
+        var file = fopen(path, "r");
+        var size = fseek(file, "end", 0);
+        fclose(file);
+        return size;
+    }
     fn main() {
-        var count = fread(stdin, "*l");
-        count = cast("number", count);
-        while (count > 0) {
-            fwrite(stdout, count);
-            fwrite(stdout, "\n");
-            count = count - 1;
-        }
+        fwrite(stdout, fsize("tests/test.txt"));
+        return 6;
     }
 ]]
 
