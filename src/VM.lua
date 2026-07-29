@@ -59,7 +59,11 @@ function VM.new()
 
         --- [ Memory & Storage ]
         stack = nil,
-        globals = {},
+        globals = {
+            [0] = io.stdin,
+            [1] = io.stdout,
+            [2] = io.stderr,
+        },
         const_pool = {},
 
         --- [ Subroutines & Call Stack ]

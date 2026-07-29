@@ -14,8 +14,12 @@ function Compiler.new(ast)
     local self = setmetatable({
         current = 1,
         ast = ast,
-        globalc = 0,
-        globals = {},
+        globalc = 3,
+        globals = {
+            stdin  = 0,
+            stdout = 1,
+            stderr = 2,
+        },
         scopes = {},
         const_pool = {},
         const_map = {},

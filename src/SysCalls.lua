@@ -2,24 +2,8 @@ local bit32 = require "bit32"
 
 local SysCalls = {
     {
-        name = "print",
-        id = 0x00,
-        argc = 1,
-        handler = function(vm)
-            print(vm.stack:pop())
-        end
-    },
-    {
-        name = "read",
-        id = 0x01,
-        argc = 0,
-        handler = function(vm)
-            vm.stack:push(io.stdin:read())
-        end
-    },
-    {
         name = "exit",
-        id = 0x02,
+        id = 0x00,
         argc = 1,
         handler = function(vm)
             vm.exit_code = vm.stack:pop()
@@ -27,8 +11,16 @@ local SysCalls = {
         end
     },
     {
+        name = "time",
+        id = 0x01,
+        argc = 2,
+        handler = function(vm)
+            vm.stack:push(os.epoch and os.epoch("utc") or os.time())
+        end
+    },
+    {
         name = "fopen",
-        id = 0x03,
+        id = 0x02,
         argc = 2,
         handler = function(vm)
             local modes = { "r", "w", "a" }
@@ -39,7 +31,7 @@ local SysCalls = {
     },
     {
         name = "fread",
-        id = 0x04,
+        id = 0x03,
         argc = 2,
         handler = function(vm)
             local format = vm.stack:pop()
@@ -50,20 +42,51 @@ local SysCalls = {
         end
     },
     {
-        name = "fclose",
+        name = "fwrite",
+        id = 0x04,
+        argc = 2,
+        handler = function(vm)
+            local data = vm.stack:pop()
+            local fh = vm.stack:pop()
+            if fh then
+                local sucess, err = fh:write(data)
+                vm.stack:push(sucess and 0 or 1)
+            end
+        end
+    },
+    {
+        name = "fseek",
         id = 0x05,
+        argc = 3,
+        handler = function(vm)
+            local offset = vm.stack:pop()
+            local whence = vm.stack:pop()
+            local fh = vm.stack:pop()
+            if fh then
+                local pos, err = fh:seek(whence, offset)
+                vm.stack:push(pos)
+            end
+        end
+    },
+    {
+        name = "ftell",
+        id = 0x06,
+        argc = 1,
+        handler = function(vm)
+            local fh = vm.stack:pop()
+            if fh then
+                local pos = fh:seek("cur", 0)
+                vm.stack:push(pos)
+            end
+        end
+    },
+    {
+        name = "fclose",
+        id = 0x07,
         argc = 1,
         handler = function(vm)
             local fh = vm.stack:pop()
             fh:close()
-        end
-    },
-    {
-        name = "time",
-        id = 0x06,
-        argc = 2,
-        handler = function(vm)
-            vm.stack:push(os.epoch and os.epoch("utc") or os.time())
         end
     },
 }
