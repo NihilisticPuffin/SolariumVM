@@ -136,6 +136,8 @@ function Parser:statement()
         return self:while_statement()
     elseif self:match(TT.RETURN) then
         return self:return_statement()
+    elseif self:match(TT.LBRACE) then
+        return self:block_statement()
     end
 
     return self:expression_statement()

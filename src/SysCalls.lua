@@ -13,7 +13,7 @@ local SysCalls = {
     {
         name = "time",
         id = 0x01,
-        argc = 2,
+        argc = 0,
         handler = function(vm)
             vm.stack:push(os.epoch and os.epoch("utc") or os.time())
         end
