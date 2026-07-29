@@ -251,10 +251,9 @@ function Compiler:compile()
     local funcs = {}
     for _, stmt in ipairs(self.ast.statements) do
         if stmt.type == "FuncDecl" then
+            table.insert(funcs, stmt)
             if stmt.name == "main" then
-                main_func = stmt
-            else
-                table.insert(funcs, stmt)
+                main_func = #funcs
             end
         else
             errorf("Invalid top level code") --- TODO: Better Error Messages
@@ -263,27 +262,33 @@ function Compiler:compile()
     for _, func_stmt in ipairs(funcs) do
         table.insert(self.func_table, { name = func_stmt.name, argc = #func_stmt.params, address = 0 })
     end
-    if not main_func then
-        errorf("Compilation error: Missing 'main' entry point.")
-    end
-    self:push_scope()
-    self:compile_stmt(main_func.body)
-    if self.bytecode[#self.bytecode] == OPCODES.RETURN then
-        self.bytecode[#self.bytecode] = OPCODES.SYSCALL self:emit8(0x00)
+
+    local jmp_pos
+    if main_func then
+        jmp_pos = self:emit_jump(OPCODES.JMP)
     end
     self:emit8(OPCODES.HALT)
-    self:pop_scope()
-
     for i, func_stmt in ipairs(funcs) do
         self.func_table[i].address = #self.bytecode
         self:push_scope()
         for _, param in ipairs(func_stmt.params) do
             self:declare_local(param)
         end
+        if func_stmt.name == "main" then
+            self:patch_jump(jmp_pos)
+        end
         self:compile_stmt(func_stmt.body)
-        if self.bytecode[#self.bytecode] ~= OPCODES.RETURN then
+        if self.bytecode[#self.bytecode] ~= OPCODES.RETURN and func_stmt.name ~= "main" then
             self:emit8(OPCODES.NULL)
             self:emit8(OPCODES.RETURN)
+        end
+        if func_stmt.name == "main" then
+            if self.bytecode[#self.bytecode] ~= OPCODES.RETURN then
+                self:compile_expr({type = "LiteralExpr", value = 0})
+                self:emit8(OPCODES.RETURN)
+            end
+            self.bytecode[#self.bytecode] = OPCODES.SYSCALL
+            self:emit8(0x00)
         end
         self:pop_scope()
     end
