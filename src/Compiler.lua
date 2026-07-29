@@ -110,7 +110,7 @@ end
 function Compiler:compile_expr(node)
     if node.type == "LiteralExpr" then
         if node.value == nil then
-            self:emit_const(OPCODES.NULL)
+            self:emit8(OPCODES.NULL)
             return
         end
         self:emit8(OPCODES.CONSTANT) self:emit_const(node.value)
