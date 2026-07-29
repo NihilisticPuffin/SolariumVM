@@ -6,11 +6,13 @@ local VM = require "VM"
 
 local source = [[
     fn main() {
-        fwrite(stdout, "What is your name: ");
-        var name = fread(stdin, "*l");
-        fwrite(stdout, "Hello, ");
-        fwrite(stdout, name);
-        fwrite(stdout, "!\n");
+        var count = fread(stdin, "*l");
+        count = cast("number", count);
+        while (count > 0) {
+            fwrite(stdout, count);
+            fwrite(stdout, "\n");
+            count = count - 1;
+        }
     }
 ]]
 

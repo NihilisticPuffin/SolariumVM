@@ -1,4 +1,4 @@
-local bit32 = require "bit32"
+local function errorf(fmt, ...) error(string.format(fmt, ...), 0) end
 
 local SysCalls = {
     {
@@ -87,6 +87,31 @@ local SysCalls = {
         handler = function(vm)
             local fh = vm.stack:pop()
             fh:close()
+        end
+    },
+    {
+        name = "cast",
+        id = 0x08,
+        argc = 2,
+        handler = function(vm)
+            local value = vm.stack:pop()
+            local target_type = vm.stack:pop()
+
+            if target_type == "number" then
+                if type(value) == "string" and #value == 1 then
+                    vm.stack:push(string.byte(value))
+                    return
+                end
+                local converted = tonumber(value)
+                if converted == nil then
+                    errorf("Failed to cast value '%s' to number", tostring(value))
+                end
+                vm.stack:push(converted)
+            elseif target_type == "string" then
+                vm.stack:push(tostring(value))
+            else
+                errorf("Unsupported cast target type: '%s'", tostring(target_type))
+            end
         end
     },
 }
