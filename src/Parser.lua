@@ -305,6 +305,8 @@ end
 
 function Parser:primary()
     if self:match(TT.NULL) then return AST.LiteralExpr(nil) end
+    if self:match(TT.TRUE) then return AST.LiteralExpr(1) end
+    if self:match(TT.FALSE) then return AST.LiteralExpr(0) end
     if self:match(TT.NUMBER, TT.STRING, TT.CHAR) then return AST.LiteralExpr(self:peek(-1).literal or self:peek(-1).lexeme) end
 
     if self:match(TT.IDENTIFIER) then

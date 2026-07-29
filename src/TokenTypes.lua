@@ -39,6 +39,8 @@ return {
     FOR         = "for",
     IF          = "if",
     NULL        = "null",
+    TRUE        = "true",
+    FALSE       = "false",
     RETURN      = "return",
     VAR         = "var",
     WHILE       = "while",
