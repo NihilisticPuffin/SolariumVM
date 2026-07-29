@@ -75,6 +75,11 @@ function Compiler:pop_scope()
 end
 function Compiler:declare_local(name)
     local scope = self.scopes[#self.scopes]
+    for _, var_name in ipairs(scope) do
+        if var_name == name then
+            errorf("Cannot redeclare local variable '%s' in the same scope.", name)
+        end
+    end
     local index = #scope
     table.insert(scope, name)
     return index

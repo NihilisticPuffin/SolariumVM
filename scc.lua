@@ -4,19 +4,20 @@ local Parser = require "Parser"
 local Compiler = require "Compiler"
 local VM = require "VM"
 
-local source = [[
-    fn fsize(path) {
-        var file = fopen(path, "r");
-        var size = fseek(file, "end", 0);
-        fclose(file);
-        return size;
-    }
-    fn main() {
-        fwrite(stdout, fsize("tests/test.txt"));
-        return 6;
-    }
-]]
+if arg[1] == nil then
+    error("Usage: scc <file>", 0)
+end
 
+local fh = io.open(arg[1], "r")
+local source
+if fh then
+    source = fh:read("*a")
+    fh:close()
+end
+
+if source == nil then
+    error("Could not read file: " .. arg[1], 0)
+end
 
 local tokens = Lexer.new(source):scan()
 local ast = Parser.new(tokens, source):parse()

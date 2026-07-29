@@ -160,7 +160,7 @@ handlers[OPCODES.GET_GLOBAL] = function(self)
 end
 
 handlers[OPCODES.SET_GLOBAL] = function(self)
-    self.globals[self:read8()] = self.stack:pop()
+    self.globals[self:read8()] = self.stack:peek()
 end
 
 handlers[OPCODES.GET_LOCAL] = function(self)
@@ -317,11 +317,17 @@ end
 
 handlers[OPCODES.SYSCALL] = function(self)
     local sys_id = self:read8()
-    local sys_handler = self.syscalls.handlers[sys_id]
+    local sys_handler = self.syscalls.handlers[sys_id].handler
     if not sys_handler then
         errorf("Unknown or unhandled syscall ID: 0x%02X at IP: %d", sys_id, self.ip - 1)
     end
+
+    local before = self.stack:size()
     sys_handler(self)
+    if self.stack:size() ~= before - self.syscalls.handlers[sys_id].argc + 1 then
+        errorf("Syscall 0x%02X left stack unbalanced (expected +1, got %+d) at IP: %d",
+            sys_id, self.stack:size() - before, self.ip - 1)
+    end
 end
 
 handlers[OPCODES.HALT] = function(self) self.running = false end

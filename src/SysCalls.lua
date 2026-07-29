@@ -6,7 +6,7 @@ local SysCalls = {
         id = 0x00,
         argc = 1,
         handler = function(vm)
-            vm.exit_code = vm.stack:pop()
+            vm.exit_code = vm.stack:peek()
             vm.running = false
         end
     },
@@ -36,8 +36,10 @@ local SysCalls = {
             local format = vm.stack:pop()
             local fh = vm.stack:pop()
             if fh then
-                vm.stack:push(fh:read(format))
+                vm.stack:push(fh:read(format) or "")
+                return
             end
+            vm.stack:push(0)
         end
     },
     {
@@ -48,9 +50,11 @@ local SysCalls = {
             local data = vm.stack:pop()
             local fh = vm.stack:pop()
             if fh then
-                local sucess, err = fh:write(data)
-                vm.stack:push(sucess and 0 or 1)
+                local success, err = fh:write(data)
+                vm.stack:push(success and 0 or 1)
+                return
             end
+            vm.stack:push(0)
         end
     },
     {
@@ -63,8 +67,10 @@ local SysCalls = {
             local fh = vm.stack:pop()
             if fh then
                 local pos, err = fh:seek(whence, offset)
-                vm.stack:push(pos)
+                vm.stack:push(pos or 0)
+                return
             end
+            vm.stack:push(0)
         end
     },
     {
@@ -75,8 +81,10 @@ local SysCalls = {
             local fh = vm.stack:pop()
             if fh then
                 local pos = fh:seek("cur", 0)
-                vm.stack:push(pos)
+                vm.stack:push(pos or 0)
+                return
             end
+            vm.stack:push(0)
         end
     },
     {
@@ -85,8 +93,8 @@ local SysCalls = {
         argc = 1,
         handler = function(vm)
             local fh = vm.stack:pop()
-            fh:close()
-            vm.stack:push(0)
+            local success, err = fh:close()
+            vm.stack:push(success and 0 or 1)
         end
     },
     {
@@ -121,7 +129,7 @@ SysCalls.handlers = {}
 
 for _, syscall in ipairs(SysCalls) do
     SysCalls.calls[syscall.name] = syscall
-    SysCalls.handlers[syscall.id] = syscall.handler
+    SysCalls.handlers[syscall.id] = syscall
 end
 
 return SysCalls
