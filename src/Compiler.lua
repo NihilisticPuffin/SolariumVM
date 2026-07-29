@@ -43,6 +43,19 @@ function Compiler:patch16(position, value)
     self.bytecode[position] = hi
     self.bytecode[position + 1] = lo
 end
+function Compiler:emit_jump(jmp)
+    self:emit8(jmp)
+    local pos = #self.bytecode + 1
+    self:emit16(0)
+    return pos
+end
+
+function Compiler:patch_jump(pos)
+    local target = #self.bytecode
+    local offset = target - (pos + 1)
+    self:patch16(pos, offset)
+end
+
 function Compiler:emit_const(value)
     if self.const_map[value] then
         self:emit8(self.const_map[value])
@@ -188,38 +201,28 @@ function Compiler:compile_stmt(node)
         self:emit8(OPCODES.RETURN)
     elseif node.type == "IfStmt" then
         self:compile_expr(node.cond)
-        self:emit8(OPCODES.JZ)
-        local jz_pos = #self.bytecode + 1
-        self:emit16(0)
+        local jz_pos = self:emit_jump(OPCODES.JZ)
         self:compile_stmt(node["then"])
         
         if node["else"] then
-            self:emit8(OPCODES.JMP)
-            local jmp_pos = #self.bytecode + 1
-            self:emit16(0)
-            local then_offset = #self.bytecode - jz_pos + 1
-            self:patch16(jz_pos, then_offset)
+            local jmp_pos = self:emit_jump(OPCODES.JMP)
+            self:patch_jump(jz_pos)
             self:compile_stmt(node["else"])
-            local else_offset = #self.bytecode - jmp_pos + 1
-            self:patch16(jmp_pos, else_offset)
+            self:patch_jump(jmp_pos)
         else
-            local offset = #self.bytecode - jz_pos - 1
-            self:patch16(jz_pos, offset)
+            self:patch_jump(jz_pos)
         end
     elseif node.type == "WhileStmt" then
         local loop_start = #self.bytecode
         self:compile_expr(node.cond)
-        self:emit8(OPCODES.JZ)
-        local jz_pos = #self.bytecode + 1
-        self:emit16(0)
-
+        local jz_pos = self:emit_jump(OPCODES.JZ)
         self:compile_stmt(node.body)
 
         local loop_offset = #self.bytecode - loop_start + 3
         self:emit8(OPCODES.LOOP)
         self:emit16(loop_offset)
-        local loop_end = #self.bytecode - jz_pos + 1
-        self:patch16(jz_pos, loop_end)
+
+        self:patch_jump(jz_pos)
     elseif node.type == "VarStmt" then
         if node.init then
             self:compile_expr(node.init)
